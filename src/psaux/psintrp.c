@@ -641,23 +641,14 @@
 
       if ( font->isT1 )
       {
-        if ( unknown_othersubr_result_cnt > 0 )
+        if ( unknown_othersubr_result_cnt > 0 &&
+             !( op1 == cf2_cmdCALLSUBR ||
+                op1 == cf2_cmdRETURN   ||
+                op1 == cf2_escPOP      ||
+                op1 >= 32 /* Numbers */ ) )
         {
-          switch ( op1 )
-          {
-          case cf2_cmdCALLSUBR:
-          case cf2_cmdRETURN:
-          case cf2_cmdPOP:
-            break;
-
-          default:
-            if ( op1 >= 32 ) /* Numbers */
-              break;
-            
-            /* all operands have been transferred by previous pops */
-            unknown_othersubr_result_cnt = 0;
-            break;
-          }
+          /* all operands have been transferred by previous pops */
+          unknown_othersubr_result_cnt = 0;
         }
 
         if ( large_int && !( op1 >= 32 || op1 == cf2_escDIV ) )
