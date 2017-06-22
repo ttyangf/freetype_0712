@@ -31,6 +31,13 @@ FT_BEGIN_HEADER
   FT_CALLBACK_TABLE
   const T1_Decoder_FuncsRec  t1_decoder_funcs;
 
+  FT_LOCAL( FT_Error )
+  t1operator_seac( T1_Decoder  decoder,
+                   FT_Pos      asb,
+                   FT_Pos      adx,
+                   FT_Pos      ady,
+                   FT_Int      bchar,
+                   FT_Int      achar );
 
   FT_LOCAL( FT_Error )
   t1_decoder_parse_glyph( T1_Decoder  decoder,

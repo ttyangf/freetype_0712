@@ -182,7 +182,7 @@
   /* <Return>                                                              */
   /*    FreeType error code.  0 means success.                             */
   /*                                                                       */
-  static FT_Error
+  FT_LOCAL_DEF( FT_Error )
   t1operator_seac( T1_Decoder  decoder,
                    FT_Pos      asb,
                    FT_Pos      adx,
