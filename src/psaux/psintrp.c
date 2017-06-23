@@ -490,7 +490,6 @@
     CF2_Fixed  nominalWidthX = cf2_getNominalWidthX( decoder );
 
     /* Stuff for Type 1 */
-    FT_Pos     orig_x, orig_y;
     FT_Int     known_othersubr_result_cnt   = 0;
     FT_Int     unknown_othersubr_result_cnt = 0;
     FT_Bool    large_int;
@@ -1303,26 +1302,34 @@
                       FT_TRACE4(( " unknown op (12, %d)\n", op2 ));
                     else
                     {
+                      CF2_Fixed  lsb_x, lsb_y;
+
+
                       FT_TRACE4(( " sbw" ));
 
-                      builder->parse_state = T1_Parse_Have_Width;
+                      builder->advance.y = cf2_stack_popFixed( opStack );
+                      builder->advance.x = cf2_stack_popFixed( opStack );
 
-                      builder->left_bearing.x = ADD_LONG( builder->left_bearing.x,
-                                                          top[0] );
-                      builder->left_bearing.y = ADD_LONG( builder->left_bearing.y,
-                                                          top[1] );
+                      lsb_y = cf2_stack_popFixed( opStack );
+                      lsb_x = cf2_stack_popFixed( opStack );
 
-                      builder->advance.x = top[2];
-                      builder->advance.y = top[3];
+                      builder->left_bearing.x = ADD_INT32( builder->left_bearing.x,
+                                                           lsb_x );
+                      builder->left_bearing.y = ADD_INT32( builder->left_bearing.y,
+                                                           lsb_y );
 
-                      x = ADD_LONG( builder->pos_x, top[0] );
-                      y = ADD_LONG( builder->pos_y, top[1] );
+                      haveWidth = TRUE;
 
                       /* the `metrics_only' indicates that we only want to compute */
                       /* the glyph's metrics (lsb + advance width), not load the   */
                       /* rest of it; so exit immediately                           */
                       if ( builder->metrics_only )
-                        return FT_Err_Ok;
+                        goto exit;
+
+                      curX = ADD_INT32( curX, lsb_x );
+                      curY = ADD_INT32( curY, lsb_y );
+
+                      cf2_glyphpath_moveTo( &glyphPath, curX, curY );
                     }
                   }
                   break;
@@ -1721,26 +1728,30 @@
         }
         else
         {
+          CF2_Fixed  lsb_x;
+
+
           FT_TRACE4(( " hsbw" ));
 
-          builder->parse_state = T1_Parse_Have_Width;
-
-          builder->left_bearing.x = ADD_LONG( builder->left_bearing.x,
-                                              top[0] );
-
-          builder->advance.x = top[1];
+          builder->advance.x = cf2_stack_popFixed( opStack );
           builder->advance.y = 0;
 
-          orig_x = x = ADD_LONG( builder->pos_x, top[0] );
-          orig_y = y = builder->pos_y;
+          lsb_x = cf2_stack_popFixed( opStack );
 
-          FT_UNUSED( orig_y );
+          builder->left_bearing.x = ADD_INT32( builder->left_bearing.x,
+                                               lsb_x );
+
+          haveWidth = TRUE;
 
           /* the `metrics_only' indicates that we only want to compute */
           /* the glyph's metrics (lsb + advance width), not load the   */
           /* rest of it; so exit immediately                           */
           if ( builder->metrics_only )
-            return FT_Err_Ok;
+            goto exit;
+
+          curX = ADD_INT32( curX, lsb_x );
+
+          cf2_glyphpath_moveTo( &glyphPath, curX, curY );
         }
         break;
         
