@@ -1289,12 +1289,18 @@
                     {
                       FT_TRACE4(( " seac\n" ));
 
-                      return t1operator_seac( decoder,
-                                              top[0], /* FT_Pos */
-                                              top[1],
-                                              top[2],
-                                              Fix2Int( cf2_stack_popFixed( opStack ) ), /* FT_Int */
-                                              Fix2Int( cf2_stack_popFixed( opStack ) ));
+
+                      CF2_Int  achar = cf2_stack_popInt( opStack );
+                      CF2_Int  bchar = cf2_stack_popInt( opStack );
+                      
+                      FT_Pos   ady   = cf2_stack_popFixed ( opStack );
+                      FT_Pos   adx   = cf2_stack_popFixed ( opStack );
+                      FT_Pos   asb   = cf2_stack_popFixed ( opStack );
+
+                      lastError = t1operator_seac( decoder,
+                                                   asb, adx, ady,
+                                                   bchar, achar );
+                      goto exit;
                     }
                   }
                   break;
