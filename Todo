@@ -1,0 +1,26 @@
+Current topic: Merge CF2 (Adobe) and Type 1 interpreters.
+
+TODO:
+* [hints]
+  . Allow hint change without hintmask (rewrite hintStemArray)
+* [lineto,moveto,rr/vh/hvcurveto]
+  . psft.c: Add Type 1 mode for builder functions. (Merge builders?)
+* callsubr
+  Add t1 mode
+* seac, setcurrentpoint
+  Implement.
+* callothersubr, pop
+  Implement.
+  Add PostScript stack for holding unknown othersubr operands.
+
+NOTE:
+* Builders
+.  differing fields :
+    face,         TT_Face extends FT_Face
+    glyph,        CFF_GlyphSlot extends FT_GlyphSlot
+.   parse_state,  possibly not needed, covered by path_begun and haveWidth
+.   funcs         Need to use this in psft.c (t1 mode). Change to void ptr if merge
+* Left sidebearing (lsb)
+.  cff does not set this in CF2. In CFF only if invalid hsbw/sbw is accepted.
+
+EOF
