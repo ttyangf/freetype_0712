@@ -6,14 +6,31 @@ TODO:
 * [lineto,moveto,rr/vh/hvcurveto]
   . psft.c: Add Type 1 mode for builder functions. (Merge builders?)
 * callsubr
-  Add t1 mode
-* seac, setcurrentpoint
-  Implement.
-* callothersubr, pop
-  Implement.
-  Add PostScript stack for holding unknown othersubr operands.
+  . Check: pop value might not be int (>1131)
+  . psft.c (cf2_initLocalRegionBuffer): Unify decoder->subrs and decoder->locals
+* callothersubr
+  . Check blend (14~18).
+  . Check unknown case.
+  . Duplicate ops (see note)
+  . PostScript operand stack: under/overflow checks.
+* [all]
+  . Check if stack clear.
 
 NOTE:
+* seac
+.  Should work but follows a hugely indirect route back to cf2_interpT2CharString
+    psintrp.c: cf2_interpT2CharString - From cf2_escSEAC
+  > t1decode.c: t1operator_seac - Gets callback from t1_decoder_parse_glyph..
+  > t1gload.c: T1_Parse_Glyph - ..which is this, calls..
+  >  "" : T1_Parse_Glyph_And_Get_Char_String - ..which gets glyph data and calls..
+  > ..parse_charstrings callback : cf2_decoder_parse_charstrings
+  > cf2_getGlyphOutline
+  > cf2_interpT2CharString.
+.  We really only need to get the glyph data and put it into recursive interp call
+* callothersubr
+.  OtherSubrs 20~28 duplicate escape operations (add, sub, ..etc.)!
+.  Consider use of gotos to jump over?
+.  Known OtherSubr results are still pushed automatically.
 * Builders
 .  differing fields :
     face,         TT_Face extends FT_Face
@@ -22,5 +39,8 @@ NOTE:
 .   funcs         Need to use this in psft.c (t1 mode). Change to void ptr if merge
 * Left sidebearing (lsb)
 .  cff does not set this in CF2. In CFF only if invalid hsbw/sbw is accepted.
+* Decoders
+.  Type1 has locals_bias of 0.
+.  cff:locals is type1:subrs
 
 EOF
