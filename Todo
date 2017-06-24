@@ -1,20 +1,13 @@
 Current topic: Merge CF2 (Adobe) and Type 1 interpreters.
 
 TODO:
-* [hints]
-  . Allow hint change without hintmask (rewrite hintStemArray)
 * [lineto,moveto,rr/vh/hvcurveto]
   . psft.c: Add Type 1 mode for builder functions. (Merge builders?)
 * callsubr
   . Check: pop value might not be int (>1131)
   . psft.c (cf2_initLocalRegionBuffer): Unify decoder->subrs and decoder->locals
 * callothersubr
-  . Check blend (14~18).
-  . Check unknown case.
   . Duplicate ops (see note)
-  . PostScript operand stack: under/overflow checks.
-* [all]
-  . Check if stack clear.
 
 NOTE:
 * seac
