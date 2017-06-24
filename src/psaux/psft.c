@@ -381,6 +381,7 @@
 
       /* copy isCFF2 boolean from TT_Face to CF2_Font */
       font->isCFF2 = builder->face->is_cff2;
+      font->isT1   = is_t1;
 
       font->renderingFlags = 0;
       if ( hinted )

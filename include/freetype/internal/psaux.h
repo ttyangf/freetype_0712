@@ -572,6 +572,8 @@ FT_BEGIN_HEADER
     void*           hints_funcs;    /* hinter-specific */
     void*           hints_globals;  /* hinter-specific */
 
+    FT_Bool         is_t1;
+
     PS_Builder_FuncsRec  funcs;
 
   };
