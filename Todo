@@ -1,11 +1,23 @@
-Current topic: Merge CF2 (Adobe) and Type 1 interpreters.
+Current topic: Adapt objects and initialization to work.
+for: Merge CF2 (Adobe) and Type 1 interpreters.
 
 TODO:
-* [lineto,moveto,rr/vh/hvcurveto]
-  . psft.c: Add Type 1 mode for builder functions. (Merge builders?)
+* Decoder/Builder
+  . Change driver-side init to use PS_ objects; OR
+  . Create CFF/T1 -> PS helper function (copies relevant fields over)
+* Decoder
+  . Make ps_decoder_ funcs
+  . Type 1 mode decoder initialisation (CFF unchanged) (see notes)
+* ps_builder_{init,done}
+  . Use these
+* {get,free}_glyph_callback
+  . cff already has these. Add for type1 side
+  . Set during init for PS_Decoder
+* seac
+  . Fix (see note)
+  . Use above callbacks
 * callsubr
-  . Check: pop value might not be int (>1131)
-  . psft.c (cf2_initLocalRegionBuffer): Unify decoder->subrs and decoder->locals
+  . Check: pop value might not be int (>1131) for Type 1 
 * callothersubr
   . Duplicate ops (see note)
 
@@ -28,12 +40,10 @@ NOTE:
 .  differing fields :
     face,         TT_Face extends FT_Face
     glyph,        CFF_GlyphSlot extends FT_GlyphSlot
-.   parse_state,  possibly not needed, covered by path_begun and haveWidth
-.   funcs         Need to use this in psft.c (t1 mode). Change to void ptr if merge
+.   funcs         Use (merged) ps_builder_ funcs
 * Left sidebearing (lsb)
 .  cff does not set this in CF2. In CFF only if invalid hsbw/sbw is accepted.
 * Decoders
 .  Type1 has locals_bias of 0.
-.  cff:locals is type1:subrs
 
 EOF
