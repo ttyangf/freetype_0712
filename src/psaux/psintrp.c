@@ -481,7 +481,7 @@
     FT_Error  lastError = FT_Err_Ok;
 
     /* pointer to parsed font object */
-    CFF_Decoder*  decoder = font->decoder;
+    PS_Decoder*  decoder = font->decoder;
 
     FT_Error*  error  = &font->error;
     FT_Memory  memory = font->memory;
@@ -1525,8 +1525,8 @@
                       if ( arg_cnt != 0 )
                         goto Unexpected_OtherSubr;
 
-                      if ( FT_SET_ERROR( t1_builder_start_point( builder, curX, curY ) ) ||
-                           FT_SET_ERROR( t1_builder_check_points( builder, 6 ) )   )
+                      if ( ps_builder_start_point( &decoder->builder, curX, curY ) ||
+                           ps_builder_check_points( &decoder->builder, 6 )         )
                         goto exit;
 
                       decoder->flex_state        = 1;
@@ -1559,13 +1559,13 @@
                         /* opcodes in the middle of a flex (which don't    */
                         /* increase `num_flex_vectors'); we thus have to   */
                         /* check whether we can add a point                */
-                        if ( FT_SET_ERROR( t1_builder_check_points( builder, 1 ) ) )
+                        if ( ps_builder_check_points( &decoder->builder, 1 ) )
                         {
                           lastError = FT_THROW( Invalid_Glyph_Format );
                           goto exit;
                         }
 
-                        t1_builder_add_point( builder,
+                        ps_builder_add_point( &decoder->builder,
                                               curX,
                                               curY,
                                               (FT_Byte)( idx == 3 || idx == 6 ) );

@@ -1212,17 +1212,21 @@ FT_BEGIN_HEADER
                 CFF_Size      size,
                 FT_UInt       glyph_index );
 
+#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
     FT_Error
     (*parse_charstrings)( CFF_Decoder*  decoder,
                           FT_Byte*      charstring_base,
-                          FT_ULong      charstring_len
-#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
-/*TODO(ewaldhew): seems hacky, is there a better way to do this?*/
-                         ,FT_Bool       in_dict
+                          FT_ULong      charstring_len,
+                          FT_Bool       in_dict );
+#else
+    FT_Error
+    (*parse_charstrings)( PS_Decoder*  decoder,
+                          FT_Byte*     charstring_base,
+                          FT_ULong     charstring_len );    
 #endif
-                          );
 
   } CFF_Decoder_FuncsRec;
+
 
   /*************************************************************************/
   /*************************************************************************/
