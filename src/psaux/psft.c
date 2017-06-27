@@ -715,37 +715,36 @@
 
     FT_ASSERT( decoder->locals );
 
-    if ( decoder->font->isT1 /* TODO(ewaldhew): actually have this */)
+    buf->start = decoder->locals[idx];
+
+    if ( decoder->builder.is_t1 )
     {
       /* The Type 1 driver stores subroutines without the seed bytes. */
       /* The CID driver stores subroutines with seed bytes.  This     */
       /* case is taken care of when decoder->subrs_len == 0.          */
-      buf->start = decoder->subrs[idx];
-
-      if ( decoder->subrs_len )
-        buf->end     = buf->start + decoder->subrs_len[idx];
+      if ( decoder->locals_len )
+        buf->end     = buf->start + decoder->locals_len[idx];
       else
       {
         /* We are using subroutines from a CID font.  We must adjust */
         /* for the seed bytes.                                       */
         buf->start  += ( decoder->lenIV >= 0 ? decoder->lenIV : 0 );
-        buf->end     = decoder->subrs[idx + 1];
+        buf->end     = decoder->locals[idx + 1];
       }
-
-      buf->ptr = buf->start;
 
       if ( !buf->start )
       {
-        FT_ERROR(( "t1_decoder_parse_charstrings:"
+        FT_ERROR(( "cf2_initLocalRegionBuffer (Type 1 mode):"
                    " invoking empty subrs\n" ));
       }
     }
     else
     {
-      buf->start =
-      buf->ptr   = decoder->locals[idx];
       buf->end   = decoder->locals[idx + 1];
     }
+
+    buf->ptr = buf->start;
+    
     return FALSE;      /* success */
   }
 
