@@ -491,7 +491,7 @@
 
     /* Stuff for Type 1 */
     FT_Int     known_othersubr_result_cnt = 0;
-    FT_Bool    large_int;
+    FT_Bool    large_int = FALSE;
 #define PS_STORAGE_SIZE 3
     CF2_F16Dot16  results[PS_STORAGE_SIZE];   /* for othersubr results */
     FT_Int        result_cnt = 0;
@@ -777,7 +777,7 @@
           FT_ASSERT( ( cf2_stack_count( opStack ) == 2 ) );
 
           hint_pos = ADD_INT32( cf2_stack_getReal( opStack, 0 ),
-                              font->decoder->builder->left_bearing.y );
+                                decoder->builder.left_bearing->y );
 
           cf2_stack_setReal( opStack, 0, hint_pos );
         }
@@ -817,7 +817,7 @@
           FT_ASSERT( ( cf2_stack_count( opStack ) == 2 ) );
 
           hint_pos = ADD_INT32( cf2_stack_getReal( opStack, 0 ),
-                              font->decoder->builder->left_bearing.x );
+                                decoder->builder.left_bearing->x );
 
           cf2_stack_setReal( opStack, 0, hint_pos );
         }
@@ -996,10 +996,10 @@
           /* set up the new CFF region and pointer */
           subrNum = cf2_stack_popInt( opStack );
 
-          if ( font->isT1 && decoder->subrs_hash )
+          if ( font->isT1 && decoder->locals_hash )
           {
             size_t*  val = ft_hash_num_lookup( subrNum,
-                                               decoder->subrs_hash );
+                                               decoder->locals_hash );
 
             if ( val )
               subrNum = *val;
@@ -1209,8 +1209,8 @@
 
                       FT_ASSERT( ( cf2_stack_count( opStack ) == 6 ) );
 
-                      lsb = ( op2 == cf2_escVSTEM3 ? font->decoder->builder->left_bearing.x
-                                                   : font->decoder->builder->left_bearing.y );
+                      lsb = ( op2 == cf2_escVSTEM3 ? decoder->builder.left_bearing->x
+                                                   : decoder->builder.left_bearing->y );
 
                       v0 = cf2_stack_getReal( opStack, 0 );
                       v1 = cf2_stack_getReal( opStack, 2 );
@@ -1298,9 +1298,10 @@
                       FT_Pos   adx   = cf2_stack_popFixed ( opStack );
                       FT_Pos   asb   = cf2_stack_popFixed ( opStack );
 
+                      /* TODO(ewaldhew): 
                       lastError = t1operator_seac( decoder,
                                                    asb, adx, ady,
-                                                   bchar, achar );
+                                                   bchar, achar ); */
                       goto exit;
                     }
                   }
@@ -1320,16 +1321,16 @@
 
                       builder = &decoder->builder;
                       
-                      builder->advance.y = cf2_stack_popFixed( opStack );
-                      builder->advance.x = cf2_stack_popFixed( opStack );
+                      builder->advance->y = cf2_stack_popFixed( opStack );
+                      builder->advance->x = cf2_stack_popFixed( opStack );
 
                       lsb_y = cf2_stack_popFixed( opStack );
                       lsb_x = cf2_stack_popFixed( opStack );
 
-                      builder->left_bearing.x = ADD_INT32( builder->left_bearing.x,
-                                                           lsb_x );
-                      builder->left_bearing.y = ADD_INT32( builder->left_bearing.y,
-                                                           lsb_y );
+                      builder->left_bearing->x = ADD_INT32( builder->left_bearing->x,
+                                                            lsb_x );
+                      builder->left_bearing->y = ADD_INT32( builder->left_bearing->y,
+                                                            lsb_y );
 
                       haveWidth = TRUE;
 
@@ -2186,13 +2187,13 @@
 
           builder = &decoder->builder;
           
-          builder->advance.x = cf2_stack_popFixed( opStack );
-          builder->advance.y = 0;
+          builder->advance->x = cf2_stack_popFixed( opStack );
+          builder->advance->y = 0;
 
           lsb_x = cf2_stack_popFixed( opStack );
 
-          builder->left_bearing.x = ADD_INT32( builder->left_bearing.x,
-                                               lsb_x );
+          builder->left_bearing->x = ADD_INT32( builder->left_bearing->x,
+                                                lsb_x );
 
           haveWidth = TRUE;
 
