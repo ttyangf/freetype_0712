@@ -2052,53 +2052,63 @@
   /*    hinting :: Whether hinting should be applied.                      */
   /*                                                                       */
   FT_LOCAL_DEF( void )
-  ps_builder_init( PS_Builder*    builder,
-                   TT_Face        face,
-                   FT_Size        size,
-                   CFF_GlyphSlot  glyph,
-                   FT_Bool        hinting )
+  ps_builder_init( void*        builder,
+                   FT_Bool      is_t1,
+                   PS_Builder*  ps_builder )
   {
-    builder->path_begun  = 0;
-    builder->load_points = 1;
+    FT_ZERO( ps_builder );
 
-    builder->face   = face;
-    builder->glyph  = glyph;
-    builder->memory = face->root.memory;
-
-    if ( glyph )
+    if ( is_t1 )
     {
-      FT_GlyphLoader  loader = glyph->root.internal->loader;
+      T1_Builder  t1builder = (T1_Builder)builder;
 
+      ps_builder->face           = (TT_Face)t1builder->face;
+      ps_builder->glyph          = t1builder->glyph;
+      ps_builder->memory         =  t1builder->memory;
+      ps_builder->loader         =  t1builder->loader;
+      ps_builder->base           =  t1builder->base;
+      ps_builder->current        =  t1builder->current;
 
-      builder->loader  = loader;
-      builder->base    = &loader->base.outline;
-      builder->current = &loader->current.outline;
-      FT_GlyphLoader_Rewind( loader );
+      ps_builder->pos_x          = &t1builder->pos_x;
+      ps_builder->pos_y          = &t1builder->pos_y;
 
-      builder->hints_globals = NULL;
-      builder->hints_funcs   = NULL;
+      ps_builder->left_bearing   = &t1builder->left_bearing;
+      ps_builder->advance        = &t1builder->advance;
 
-      if ( hinting && size )
-      {
-        CFF_Internal  internal = (CFF_Internal)size->internal->module_data;
+      ps_builder->bbox           = &t1builder->bbox;
+      ps_builder->path_begun     =  0;
+      ps_builder->load_points    =  t1builder->load_points;
+      ps_builder->no_recurse     =  t1builder->no_recurse;
 
-        if ( internal )
-        {
-          builder->hints_globals = (void *)internal->topfont;
-          builder->hints_funcs   = glyph->root.internal->glyph_hints;
-        }
-      }
+      ps_builder->metrics_only   =  t1builder->metrics_only;
+    }
+    else
+    {
+      CFF_Builder*  cffbuilder = (CFF_Builder*)builder;
+
+      ps_builder->face           = cffbuilder->face;
+      ps_builder->memory         =  cffbuilder->memory;
+      ps_builder->glyph          =  cffbuilder->glyph;
+      ps_builder->loader         =  cffbuilder->loader;
+      ps_builder->base           =  cffbuilder->base;
+      ps_builder->current        =  cffbuilder->current;
+
+      ps_builder->pos_x          = &cffbuilder->pos_x;
+      ps_builder->pos_y          = &cffbuilder->pos_y;
+
+      ps_builder->left_bearing   = &cffbuilder->left_bearing;
+      ps_builder->advance        = &cffbuilder->advance;
+
+      ps_builder->bbox           = &cffbuilder->bbox;
+      ps_builder->path_begun     =  cffbuilder->path_begun;
+      ps_builder->load_points    =  cffbuilder->load_points;
+      ps_builder->no_recurse     =  cffbuilder->no_recurse;
+
+      ps_builder->metrics_only   =  cffbuilder->metrics_only;
     }
 
-    builder->pos_x = 0;
-    builder->pos_y = 0;
-
-    builder->left_bearing.x = 0;
-    builder->left_bearing.y = 0;
-    builder->advance.x      = 0;
-    builder->advance.y      = 0;
-
-    /* builder->funcs = ps_builder_funcs; */
+    ps_builder->is_t1            = is_t1;
+    ps_builder->funcs            = ps_builder_funcs;
   }
 
 

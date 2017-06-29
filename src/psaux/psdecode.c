@@ -2,7 +2,6 @@
 
 #include <ft2build.h>
 #include FT_INTERNAL_SERVICE_H
-#include FT_SERVICE_CFF_TABLE_LOAD_H
 
 #include "psdecode.h"
 #include "psobjs.h"
@@ -16,143 +15,74 @@
   /*    ps_decoder_init                                                    */
   /*                                                                       */
   /* <Description>                                                         */
-  /*    Initializes a given glyph decoder.                                 */
+  /*    Creates a decoder for the combined Type 1 / CFF interpreter.       */
   /*                                                                       */
   /* <InOut>                                                               */
   /*    decoder :: A pointer to the glyph builder to initialize.           */
   /*                                                                       */
   /* <Input>                                                               */
-  /*    face      :: The current face object.                              */
   /*                                                                       */
-  /*    size      :: The current size object.                              */
   /*                                                                       */
-  /*    slot      :: The current glyph object.                             */
   /*                                                                       */
-  /*    hinting   :: Whether hinting is active.                            */
   /*                                                                       */
-  /*    hint_mode :: The hinting mode.                                     */
   /*                                                                       */
   FT_LOCAL_DEF( void )
-  ps_decoder_init( PS_Decoder*     decoder,
-                   TT_Face         face,
-                   FT_Size         size,
-                   CFF_GlyphSlot   slot,
-                   FT_Byte**       glyph_names,
-                   PS_Blend        blend,
-                   FT_Bool         hinting,
-                   FT_Render_Mode  hint_mode,
-                   PS_Decoder_Get_Glyph_Callback   get_callback,
-                   PS_Decoder_Free_Glyph_Callback  free_callback )
+  ps_decoder_init( void*        decoder,
+                   FT_Bool      is_t1,
+                   PS_Decoder*  ps_decoder )
   {
-    CFF_Font  cff = (CFF_Font)face->extra.data;
+    FT_ZERO( ps_decoder );
 
-
-    /* clear everything */
-    FT_ZERO( decoder );
-
-    /* initialize builder */
-    ps_builder_init( &decoder->builder, face, size, slot, hinting );
-
-    if ( face->is_t1 )
+    if ( is_t1 )
     {
-      /* retrieve PSNames interface from list of current modules */
-      {
-        FT_Service_PsCMaps  psnames;
+      T1_Decoder  t1_decoder = (T1_Decoder)decoder;
 
+      ps_builder_init( &t1_decoder->builder,
+                       is_t1,
+                       &ps_decoder->builder );
 
-        FT_FACE_FIND_GLOBAL_SERVICE( face, psnames, POSTSCRIPT_CMAPS );
-        if ( !psnames )
-        {
-          FT_ERROR(( "ps_decoder_init:"
-                     " the `psnames' module is not available\n" ));
-          return FT_THROW( Unimplemented_Feature );
-        }
+      ps_decoder->psnames            =  t1_decoder->psnames;
 
-        decoder->psnames = psnames;
-      }
+      ps_decoder->num_glyphs         =  t1_decoder->num_glyphs;
+      ps_decoder->glyph_names        =  t1_decoder->glyph_names;
+      ps_decoder->hint_mode          =  t1_decoder->hint_mode;
+      ps_decoder->blend              =  t1_decoder->blend;
+      /* ps_decoder->t1_parse_callback  =  t1_decoder->parse_callback; */
 
-      /* decoder->buildchar and decoder->len_buildchar have to be  */
-      /* initialized by the caller since we cannot know the length */
-      /* of the BuildCharArray                                     */
+      ps_decoder->num_locals         =  t1_decoder->num_subrs;
+      ps_decoder->locals             =  t1_decoder->subrs;
+      ps_decoder->locals_len         =  t1_decoder->subrs_len;
+      ps_decoder->locals_hash        =  t1_decoder->subrs_hash;
 
-      decoder->num_glyphs     = (FT_UInt)face->root.num_glyphs;
-      decoder->glyph_names    = glyph_names;
-      decoder->blend          = blend;
+      ps_decoder->buildchar          =  t1_decoder->buildchar;
+      ps_decoder->len_buildchar      =  t1_decoder->len_buildchar;
     }
     else
     {
-      /* initialize Type2 decoder */
-      decoder->cff          = cff;
-      decoder->num_globals  = cff->global_subrs_index.count;
-      decoder->globals      = cff->global_subrs;
-      decoder->globals_bias = cff_compute_bias(
-                                cff->top_font.font_dict.charstring_type,
-                                decoder->num_globals );
+      CFF_Decoder*  cff_decoder = (CFF_Decoder*)decoder;
+
+      ps_builder_init( &cff_decoder->builder,
+                       is_t1,
+                       &ps_decoder->builder );
+
+      ps_decoder->cff                 =  cff_decoder->cff;
+      ps_decoder->current_subfont     =  cff_decoder->current_subfont;
+
+      ps_decoder->num_globals         =  cff_decoder->num_globals;
+      ps_decoder->globals             =  cff_decoder->globals;
+      ps_decoder->globals_bias        =  cff_decoder->globals_bias;
+      ps_decoder->num_locals          =  cff_decoder->num_locals;
+      ps_decoder->locals              =  cff_decoder->locals;
+      ps_decoder->locals_bias         =  cff_decoder->locals_bias;
+
+      ps_decoder->glyph_width         =  cff_decoder->glyph_width;
+      ps_decoder->nominal_width       =  cff_decoder->nominal_width;
+      ps_decoder->width_only          =  cff_decoder->width_only;
+
+      ps_decoder->hint_mode           =  cff_decoder->hint_mode;
+
+      ps_decoder->get_glyph_callback  =  cff_decoder->get_glyph_callback;
+      ps_decoder->free_glyph_callback =  cff_decoder->free_glyph_callback;
     }
-
-    decoder->hint_mode    = hint_mode;
-
-    decoder->get_glyph_callback  = get_callback;
-    decoder->free_glyph_callback = free_callback;
   }
 
-
-  /* this function is used to select the subfont */
-  /* and the locals subrs array                  */
-  FT_LOCAL_DEF( FT_Error )
-  ps_decoder_prepare( PS_Decoder*  decoder,
-                      FT_Size      size,
-                      FT_UInt      glyph_index )
-  {
-    PS_Builder   *builder = &decoder->builder;
-    FT_Error      error   = FT_Err_Ok;
-
-    if ( !builder->face->is_t1 )
-    {
-      CFF_Font      cff     = (CFF_Font)builder->face->extra.data;
-      CFF_SubFont   sub     = &cff->top_font;
-
-      FT_Service_CFFLoad  cffload = (FT_Service_CFFLoad)cff->cffload;
-
-      /* manage CID fonts */
-      if ( cff->num_subfonts )
-      {
-        FT_Byte  fd_index = cffload->fd_select_get( &cff->fd_select, glyph_index );
-
-
-        if ( fd_index >= cff->num_subfonts )
-        {
-          FT_TRACE4(( "cff_decoder_prepare: invalid CID subfont index\n" ));
-          error = FT_THROW( Invalid_File_Format );
-          goto Exit;
-        }
-
-        FT_TRACE3(( "  in subfont %d:\n", fd_index ));
-
-        sub = cff->subfonts[fd_index];
-
-        if ( builder->hints_funcs && size )
-        {
-          CFF_Internal  internal = (CFF_Internal)size->internal->module_data;
-
-
-          /* for CFFs without subfonts, this value has already been set */
-          builder->hints_globals = (void *)internal->subfonts[fd_index];
-        }
-
-        decoder->num_locals    = sub->local_subrs_index.count;
-        decoder->locals        = sub->local_subrs;
-        decoder->locals_bias   = cff_compute_bias(
-                                   decoder->cff->top_font.font_dict.charstring_type,
-                                   decoder->num_locals );
-
-        decoder->glyph_width   = sub->private_dict.default_width;
-        decoder->nominal_width = sub->private_dict.nominal_width;
-
-        decoder->current_subfont = sub;
-      }
-    }
-
-  Exit:
-    return error;
-  }
