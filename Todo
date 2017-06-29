@@ -2,39 +2,16 @@ Current topic: Adapt objects and initialization to work.
 for: Merge CF2 (Adobe) and Type 1 interpreters.
 
 TODO:
-* Decoder/Builder
-  . Change driver-side init to use PS_ objects; OR
-  . Create CFF/T1 -> PS helper function (copies relevant fields over)
 * Decoder
-  . Make ps_decoder_ funcs
   . Type 1 mode decoder initialisation (CFF unchanged) (see notes)
-* ps_builder_{init,done}
-  . Use these
-* {get,free}_glyph_callback
-  . cff already has these. Add for type1 side
-  . Set during init for PS_Decoder
 * seac
-  . Fix (see note)
-  . Use above callbacks
+  . Fix
 * callsubr
   . Check: pop value might not be int (>1131) for Type 1 
-* callothersubr
-  . Duplicate ops (see note)
 
 NOTE:
-* seac
-.  Should work but follows a hugely indirect route back to cf2_interpT2CharString
-    psintrp.c: cf2_interpT2CharString - From cf2_escSEAC
-  > t1decode.c: t1operator_seac - Gets callback from t1_decoder_parse_glyph..
-  > t1gload.c: T1_Parse_Glyph - ..which is this, calls..
-  >  "" : T1_Parse_Glyph_And_Get_Char_String - ..which gets glyph data and calls..
-  > ..parse_charstrings callback : cf2_decoder_parse_charstrings
-  > cf2_getGlyphOutline
-  > cf2_interpT2CharString.
-.  We really only need to get the glyph data and put it into recursive interp call
 * callothersubr
-.  OtherSubrs 20~28 duplicate escape operations (add, sub, ..etc.)!
-.  Consider use of gotos to jump over?
+.  OtherSubrs 20~28 duplicate escape operations (add, sub, ..etc.)
 .  Known OtherSubr results are still pushed automatically.
 * Builders
 .  differing fields :
@@ -43,7 +20,5 @@ NOTE:
 .   funcs         Use (merged) ps_builder_ funcs
 * Left sidebearing (lsb)
 .  cff does not set this in CF2. In CFF only if invalid hsbw/sbw is accepted.
-* Decoders
-.  Type1 has locals_bias of 0.
 
 EOF
