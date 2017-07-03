@@ -39,6 +39,7 @@
 
 #include FT_AUTOHINTER_H
 #include FT_CFF_DRIVER_H
+#include FT_TYPE1_DRIVER_H
 
 #ifdef FT_CONFIG_OPTION_MAC_FONTS
 #include "ftbase.h"

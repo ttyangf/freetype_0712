@@ -169,10 +169,10 @@
       {
         error = decoder_funcs->prepare( &decoder, size, glyph_index );
         if ( !error )
-          error = decoder_funcs->parse_charstrings( &decoder,
-                                                    charstring,
-                                                    charstring_len,
-                                                    0 );
+          error = decoder_funcs->parse_charstrings_old( &decoder,
+                                                        charstring,
+                                                        charstring_len,
+                                                        0 );
 
         cff_free_glyph_data( face, &charstring, &charstring_len );
       }
@@ -428,10 +428,10 @@
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE
       /* choose which CFF renderer to use */
       if ( driver->hinting_engine == FT_CFF_HINTING_FREETYPE )
-        error = decoder_funcs->parse_charstrings( &decoder,
-                                                  charstring,
-                                                  charstring_len,
-                                                  0 );
+        error = decoder_funcs->parse_charstrings_old( &decoder,
+                                                      charstring,
+                                                      charstring_len,
+                                                      0 );
       else
 #endif
       {

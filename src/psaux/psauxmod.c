@@ -90,7 +90,10 @@
   {
     t1_decoder_init,              /* init              */
     t1_decoder_done,              /* done              */
-    t1_decoder_parse_charstrings  /* parse_charstrings */
+#ifdef T1_CONFIG_OPTION_OLD_ENGINE
+    t1_decoder_parse_charstrings, /* parse_charstrings_old */
+#endif
+    cf2_decoder_parse_charstrings /* parse_charstrings */
   };
 
 
@@ -137,10 +140,9 @@
     cff_decoder_prepare,           /* prepare           */
 
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE
-    cff_decoder_parse_charstrings  /* parse_charstrings */
-#else
-    cf2_decoder_parse_charstrings
+    cff_decoder_parse_charstrings, /* parse_charstrings_old */
 #endif
+    cf2_decoder_parse_charstrings  /* parse_charstrings */
   };
 
 

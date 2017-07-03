@@ -43,10 +43,12 @@ FT_BEGIN_HEADER
   t1_decoder_parse_glyph( T1_Decoder  decoder,
                           FT_UInt     glyph_index );
 
+#ifdef T1_CONFIG_OPTION_OLD_ENGINE
   FT_LOCAL( FT_Error )
   t1_decoder_parse_charstrings( T1_Decoder  decoder,
                                 FT_Byte*    base,
                                 FT_UInt     len );
+#endif
 
   FT_LOCAL( FT_Error )
   t1_decoder_init( T1_Decoder           decoder,

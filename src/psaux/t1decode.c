@@ -40,6 +40,7 @@
 #undef  FT_COMPONENT
 #define FT_COMPONENT  trace_t1decode
 
+#ifdef T1_CONFIG_OPTION_OLD_ENGINE
 
   typedef enum  T1_Operator_
   {
@@ -107,6 +108,8 @@
     2, /* setcurrentpoint */
     2  /* opcode 15 (undocumented and obsolete) */
   };
+
+#endif /* T1_CONFIG_OPTION_OLD_ENGINE */
 
 
   /*************************************************************************/
@@ -340,6 +343,7 @@
   }
 
 
+#ifdef T1_CONFIG_OPTION_OLD_ENGINE
   /*************************************************************************/
   /*                                                                       */
   /* <Function>                                                            */
@@ -1578,6 +1582,8 @@
   Stack_Underflow:
     return FT_THROW( Stack_Underflow );
   }
+
+#endif /* T1_CONFIG_OPTION_OLD_ENGINE */
 
 
   /* parse a single Type 1 glyph */

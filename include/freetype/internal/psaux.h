@@ -919,10 +919,18 @@ FT_BEGIN_HEADER
     void
     (*done)( T1_Decoder  decoder );
 
+#ifdef T1_CONFIG_OPTION_OLD_ENGINE
     FT_Error
-    (*parse_charstrings)( T1_Decoder  decoder,
-                          FT_Byte*    base,
-                          FT_UInt     len );
+    (*parse_charstrings_old)( T1_Decoder  decoder,
+                              FT_Byte*    base,
+                              FT_UInt     len );
+#endif
+
+    FT_Error
+    (*parse_charstrings)( PS_Decoder*  decoder,
+                          FT_Byte*     charstring_base,
+                          FT_ULong     charstring_len );
+
 
   } T1_Decoder_FuncsRec;
 
@@ -1197,16 +1205,16 @@ FT_BEGIN_HEADER
 
 #ifdef CFF_CONFIG_OPTION_OLD_ENGINE
     FT_Error
-    (*parse_charstrings)( CFF_Decoder*  decoder,
-                          FT_Byte*      charstring_base,
-                          FT_ULong      charstring_len,
-                          FT_Bool       in_dict );
-#else
+    (*parse_charstrings_old)( CFF_Decoder*  decoder,
+                              FT_Byte*      charstring_base,
+                              FT_ULong      charstring_len,
+                              FT_Bool       in_dict );
+#endif
+
     FT_Error
     (*parse_charstrings)( PS_Decoder*  decoder,
                           FT_Byte*     charstring_base,
-                          FT_ULong     charstring_len );    
-#endif
+                          FT_ULong     charstring_len );
 
   } CFF_Decoder_FuncsRec;
 
