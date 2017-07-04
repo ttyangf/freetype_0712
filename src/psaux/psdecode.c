@@ -41,6 +41,7 @@
                        is_t1,
                        &ps_decoder->builder );
 
+      ps_decoder->cf2_instance       = &t1_decoder->cf2_instance;
       ps_decoder->psnames            =  t1_decoder->psnames;
 
       ps_decoder->num_glyphs         =  t1_decoder->num_glyphs;
@@ -66,6 +67,7 @@
                        &ps_decoder->builder );
 
       ps_decoder->cff                 =  cff_decoder->cff;
+      ps_decoder->cf2_instance        = &cff_decoder->cff->cf2_instance;
       ps_decoder->current_subfont     =  cff_decoder->current_subfont;
 
       ps_decoder->num_globals         =  cff_decoder->num_globals;
@@ -84,5 +86,21 @@
       ps_decoder->get_glyph_callback  =  cff_decoder->get_glyph_callback;
       ps_decoder->free_glyph_callback =  cff_decoder->free_glyph_callback;
     }
+  }
+
+
+  FT_LOCAL_DEF( void )
+  ps_decoder_done( PS_Decoder*  decoder )
+  {
+    FT_Memory  memory = decoder->builder.memory;
+    
+    /*ps_builder_done( &decoder->builder ); */
+
+    if ( decoder->cf2_instance->finalizer )
+    {
+      decoder->cf2_instance->finalizer( decoder->cf2_instance->data );
+      FT_FREE( decoder->cf2_instance->data );
+    }
+
   }
 
