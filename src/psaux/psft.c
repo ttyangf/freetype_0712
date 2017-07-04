@@ -293,9 +293,9 @@
   cf2_getUnitsPerEm( PS_Decoder*  decoder )
   {
     FT_ASSERT( decoder && decoder->builder.face );
-    FT_ASSERT( decoder->builder.face->root.units_per_EM );
+    FT_ASSERT( decoder->builder.face->units_per_EM );
 
-    return decoder->builder.face->root.units_per_EM;
+    return decoder->builder.face->units_per_EM;
   }
 
 
@@ -355,7 +355,7 @@
       FT_Bool  no_stem_darkening_driver =
                  driver->no_stem_darkening;
       FT_Char  no_stem_darkening_font =
-                 builder->face->root.internal->no_stem_darkening;
+                 builder->face->internal->no_stem_darkening;
 
       /* local error */
       FT_Error       error2 = FT_Err_Ok;
@@ -384,9 +384,14 @@
                                &hinted,
                                &scaled );
 
-      /* copy isCFF2 boolean from TT_Face to CF2_Font */
-      font->isCFF2 = builder->face->is_cff2;
-      font->isT1   = is_t1;
+      if ( is_t1 )
+        font->isCFF2 = FALSE;
+      else
+      {
+        /* copy isCFF2 boolean from TT_Face to CF2_Font */
+        font->isCFF2 = ((TT_Face)builder->face)->is_cff2;
+      }
+      font->isT1 = is_t1;
 
       font->renderingFlags = 0;
       if ( hinted )
@@ -473,7 +478,7 @@
     FT_ASSERT( decoder && decoder->builder.face );
     FT_ASSERT( vec && len );
     
-    face = decoder->builder.face;
+    face = (TT_Face)decoder->builder.face;
     mm = (FT_Service_MultiMasters)face->mm;
     
     return mm->get_var_blend( FT_FACE( face ), len, NULL, vec, NULL );
@@ -487,7 +492,7 @@
   {
     FT_ASSERT( decoder                          &&
                decoder->builder.face            &&
-               decoder->builder.face->root.size );
+               decoder->builder.face->size );
 
     /*
      * Note that `y_ppem' can be zero if there wasn't a call to
@@ -499,7 +504,7 @@
      *
      */
     return cf2_intToFixed(
-             decoder->builder.face->root.size->metrics.y_ppem );
+             decoder->builder.face->size->metrics.y_ppem );
   }
 
 
@@ -656,7 +661,7 @@
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
     /* Incremental fonts don't necessarily have valid charsets.        */
     /* They use the character code, not the glyph index, in this case. */
-    if ( decoder->builder.face->root.internal->incremental_interface )
+    if ( decoder->builder.face->internal->incremental_interface )
       gid = code;
     else
 #endif /* FT_CONFIG_OPTION_INCREMENTAL */
@@ -666,7 +671,7 @@
         return FT_THROW( Invalid_Glyph_Format );
     }
 
-    error = decoder->get_glyph_callback( decoder->builder.face,
+    error = decoder->get_glyph_callback( (TT_Face)decoder->builder.face,
                                          (CF2_UInt)gid,
                                          &charstring,
                                          &len );
@@ -691,7 +696,7 @@
   {
     FT_ASSERT( decoder );
 
-    decoder->free_glyph_callback( decoder->builder.face,
+    decoder->free_glyph_callback( (TT_Face)decoder->builder.face,
                                   (FT_Byte**)&buf->start,
                                   (FT_ULong)( buf->end - buf->start ) );
   }

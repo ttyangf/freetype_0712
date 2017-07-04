@@ -548,7 +548,7 @@ FT_BEGIN_HEADER
   struct  PS_Builder_
   {
     FT_Memory       memory;
-    TT_Face         face;
+    FT_Face         face;
     CFF_GlyphSlot   glyph;
     FT_GlyphLoader  loader;
     FT_Outline*     base;
