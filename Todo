@@ -1,10 +1,11 @@
-Current topic: Fix decoder initialisation to CF2 intrp in T1 mode
+Current topic: Fix decoder initialisation to CF2 intrp in T1 mode.
 for: Merge CF2 (Adobe) and Type 1 interpreters.
 
 TODO:
 * Decoder
   . Type 1 mode decoder initialisation (CFF unchanged)
-  . decoder->cff is missing for Type 1 mode. Fix init
+    decoder->current_subfont, [font scale]
+  . is missing for Type 1 mode. Fix init (see note)
   . Ensure all original decoder fields are referenced not copied
 * seac
   . Fix
@@ -15,6 +16,11 @@ NOTE:
 * callothersubr
 .  OtherSubrs 20~28 duplicate escape operations (add, sub, ..etc.)
 .  Known OtherSubr results are still pushed automatically.
+* Decoder
+.  current_subfont (cff) needed for private dict values (blues, etc.)
+.  t1 stores these in ((T1_Face)face)->type1->private_dict
+.  Should we make up a single subfont record for Type 1 mode and copy over
+   values, or leave that empty and use the builder->face pointer?
 * Builders
 .  differing fields :
     face,         TT_Face extends FT_Face
