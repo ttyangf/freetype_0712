@@ -1,9 +1,11 @@
-Current topic: Adapt objects and initialization to work.
+Current topic: Fix decoder initialisation to CF2 intrp in T1 mode
 for: Merge CF2 (Adobe) and Type 1 interpreters.
 
 TODO:
 * Decoder
-  . Type 1 mode decoder initialisation (CFF unchanged) (see notes)
+  . Type 1 mode decoder initialisation (CFF unchanged)
+  . decoder->cff is missing for Type 1 mode. Fix init
+  . Ensure all original decoder fields are referenced not copied
 * seac
   . Fix
 * callsubr
