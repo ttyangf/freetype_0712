@@ -477,6 +477,7 @@
 
     FT_ASSERT( decoder && decoder->builder.face );
     FT_ASSERT( vec && len );
+    FT_ASSERT( !decoder->builder.is_t1 );
     
     face = (TT_Face)decoder->builder.face;
     mm = (FT_Service_MultiMasters)face->mm;
@@ -655,6 +656,7 @@
 
 
     FT_ASSERT( decoder );
+    FT_ASSERT( !decoder->builder.is_t1 );
 
     FT_ZERO( buf );
 
@@ -695,6 +697,7 @@
                          CF2_Buffer   buf )
   {
     FT_ASSERT( decoder );
+    FT_ASSERT( !decoder->builder.is_t1 );
 
     decoder->free_glyph_callback( (TT_Face)decoder->builder.face,
                                   (FT_Byte**)&buf->start,
