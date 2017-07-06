@@ -150,7 +150,8 @@
     {
 #ifdef T1_CONFIG_OPTION_OLD_ENGINE
       /* choose which renderer to use */
-      if ( driver->hinting_engine == FT_T1_HINTING_FREETYPE )
+      if ( driver->hinting_engine == FT_T1_HINTING_FREETYPE ||
+           decoder->builder.metrics_only )
         error = decoder_funcs->parse_charstrings_old( decoder,
                                                       (FT_Byte*)char_string->pointer,
                                                       (FT_UInt)char_string->length );
@@ -455,6 +456,7 @@
     hinting = FT_BOOL( ( load_flags & FT_LOAD_NO_SCALE   ) == 0 &&
                        ( load_flags & FT_LOAD_NO_HINTING ) == 0 );
 
+    glyph->hint     = hinting;
     t1glyph->format = FT_GLYPH_FORMAT_OUTLINE;
 
     error = decoder_funcs->init( &decoder,
