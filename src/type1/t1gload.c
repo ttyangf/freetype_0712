@@ -23,6 +23,7 @@
 #include FT_INTERNAL_STREAM_H
 #include FT_OUTLINE_H
 #include FT_INTERNAL_POSTSCRIPT_AUX_H
+#include FT_INTERNAL_CFF_TYPES_H
 #include FT_TYPE1_DRIVER_H
 
 #include "t1errors.h"
@@ -54,6 +55,54 @@
   /*************************************************************************/
   /*************************************************************************/
 
+  static void
+  t1_make_private_dict( CFF_SubFont  subfont,
+                        PS_Private   priv )
+  {
+    CFF_Private  cpriv = &subfont->private_dict;
+    FT_UInt      n, count;
+
+
+    FT_ZERO( cpriv );
+
+    count = cpriv->num_blue_values = priv->num_blue_values;
+    for ( n = 0; n < count; n++ )
+      cpriv->blue_values[n] = (FT_Pos)priv->blue_values[n];
+
+    count = cpriv->num_other_blues = priv->num_other_blues;
+    for ( n = 0; n < count; n++ )
+      cpriv->other_blues[n] = (FT_Pos)priv->other_blues[n];
+
+    count = cpriv->num_family_blues = priv->num_family_blues;
+    for ( n = 0; n < count; n++ )
+      cpriv->family_blues[n] = (FT_Pos)priv->family_blues[n];
+
+    count = cpriv->num_family_other_blues = priv->num_family_other_blues;
+    for ( n = 0; n < count; n++ )
+      cpriv->family_other_blues[n] = (FT_Pos)priv->family_other_blues[n];
+
+    cpriv->blue_scale = priv->blue_scale;
+    cpriv->blue_shift = (FT_Pos)priv->blue_shift;
+    cpriv->blue_fuzz  = (FT_Pos)priv->blue_fuzz;
+
+    cpriv->standard_width     = (FT_Pos)priv->standard_width[0];
+    cpriv->standard_height    = (FT_Pos)priv->standard_height[0];
+
+    count = cpriv->num_snap_widths = priv->num_snap_widths;
+    for ( n = 0; n < count; n++ )
+      cpriv->snap_widths[n] = (FT_Pos)priv->snap_widths[n];
+
+    count = cpriv->num_snap_heights = priv->num_snap_heights;
+    for ( n = 0; n < count; n++ )
+      cpriv->snap_heights[n] = (FT_Pos)priv->snap_heights[n];
+
+    cpriv->force_bold       = priv->force_bold;
+    cpriv->lenIV            = priv->lenIV;
+    cpriv->language_group   = priv->language_group;
+    cpriv->expansion_factor = priv->expansion_factor;
+
+    cpriv->subfont          = subfont;
+  }
 
   static FT_Error
   T1_Parse_Glyph_And_Get_Char_String( T1_Decoder  decoder,
@@ -108,7 +157,46 @@
       else
 #endif
       {
+        CFF_SubFontRec  subfont;
+
+        FT_ZERO( &subfont );
+
+        t1_make_private_dict( &subfont, &type1->private_dict );
+
+        /* Initialize the random number generator. */
+        if ( face->root.internal->random_seed != -1 )
+        {
+          /* . If we have a face-specific seed, use it.    */
+          /*   If non-zero, update it to a positive value. */
+          subfont.random = (FT_UInt32)face->root.internal->random_seed;
+          if ( face->root.internal->random_seed )
+          {
+            do
+            {
+              face->root.internal->random_seed =
+                (FT_Int32)psaux->cff_random( (FT_UInt32)face->root.internal->random_seed );
+
+            } while ( face->root.internal->random_seed < 0 );
+          }
+        }
+        if ( !subfont.random )
+        {
+          FT_UInt32  seed;
+
+          /* compute random seed from some memory addresses */
+          seed = (FT_UInt32)( (FT_Offset)(char*)&seed          ^
+                              (FT_Offset)(char*)&decoder       ^
+                              (FT_Offset)(char*)&char_string );
+          seed = seed ^ ( seed >> 10 ) ^ ( seed >> 20 );
+          if ( seed == 0 )
+            seed = 0x7384;
+
+          subfont.random = seed;
+        }
+
         psaux->ps_decoder_init( decoder, TRUE, &psdecoder );
+
+        psdecoder.current_subfont = &subfont;
 
         error = decoder_funcs->parse_charstrings( &psdecoder,
                                                   (FT_Byte*)char_string->pointer,
