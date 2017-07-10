@@ -1,8 +1,6 @@
 Current topic: Merge CF2 (Adobe) and Type 1 interpreters.
 
 TODO:
-* seac
-  . Fix
 * callsubr
   . Check: pop value might not be int (>1131) for Type 1 
 
